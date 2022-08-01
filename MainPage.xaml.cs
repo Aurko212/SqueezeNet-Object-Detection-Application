@@ -1,5 +1,8 @@
 ﻿using System;
 using System.Threading.Tasks;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using Windows.AI.MachineLearning;
 using Windows.Graphics.Imaging;
 using Windows.Media;
@@ -43,6 +46,7 @@ namespace SqueezeApp2
         // Waiting for a click event to select a file 
         private async void OpenFileButton_Click(object sender, RoutedEventArgs e)
         {
+            label = "";
             if (!await getImage())
             {
                 return;
@@ -122,20 +126,34 @@ namespace SqueezeApp2
         private void extractResult()
         {
             // Retrieve the results of evaluation
-            var mResult = results.softmaxout_1 as TensorFloat;
+            var resultTensor = results.softmaxout_1 as TensorFloat;
             // convert the result to vector format
-            var resultVector = mResult.GetAsVectorView();
+            var resultVector = resultTensor.GetAsVectorView();
 
-            probability = 0;
-            int index = 0;
-            // find the maximum probability
+            List<(int index, float probability)> indexedResults = new List<(int, float)>();
             for (int i = 0; i < resultVector.Count; i++)
             {
-                var elementProbability = resultVector[i];
-                if (elementProbability > probability)
-                {
-                    index = i;
-                }
+                indexedResults.Add((index: i, probability: resultVector.ElementAt(i)));
+            }
+            indexedResults.Sort((a, b) =>
+            {
+                if (a.probability < b.probability)
+                    {
+                        return 1;
+                    }
+                if (a.probability > b.probability)
+                    {
+                        return -1;
+                    }
+                else
+                    {
+                        return 0;
+                    }
+            });
+
+            for (int i = 0; i < 5; i++)
+            {
+                label += $"\n\"{indexedResults[i].index}\" with confidence of { indexedResults[i].probability}%";
             }
 
         }
