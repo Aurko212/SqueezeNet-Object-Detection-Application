@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.IO;
@@ -12,6 +12,7 @@ using Windows.Storage.Streams;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media.Imaging;
+using Newtonsoft.Json;
 
 // The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
@@ -28,7 +29,8 @@ namespace SqueezeApp2
         private SqueezeNetOutput results;
         private StorageFile selectedStorageFile;
         private string label = "";
-        private float probability = 0;
+        private const string _kLabelsFileName = "Labels.json";
+        private List<string> _labels = new List<string>();
         private Helper helper = new Helper();
 
         public MainPage()
@@ -38,10 +40,27 @@ namespace SqueezeApp2
         }
         private async Task loadModel()
         {
-            // Get an access the ONNX model and save it in memory.
-            StorageFile modelFile = await StorageFile.GetFileFromApplicationUriAsync(new Uri($"ms-appx:///Assets/SqueezeNet.onnx"));
-            // Instantiate the model. 
-            modelGen = await SqueezeNetModel.CreateFromStreamAsync(modelFile);
+            try
+            {
+                // Get labels from labels file
+                var fileString = File.ReadAllText($"Assets/{_kLabelsFileName}");
+                var fileDict = JsonConvert.DeserializeObject<Dictionary<string, string>>(fileString);
+                foreach (var kvp in fileDict)
+                {
+                    _labels.Add(kvp.Value);
+                }
+
+                // Get an access the ONNX model and save it in memory.
+                StorageFile modelFile = await StorageFile.GetFileFromApplicationUriAsync(new Uri($"ms-appx:///Assets/SqueezeNet.onnx"));
+                // Instantiate the model. 
+                modelGen = await SqueezeNetModel.CreateFromStreamAsync(modelFile);
+            }
+
+            catch (Exception ex)
+            {
+                displayOutput.Text = $"error: {ex.Message}";
+                modelGen = null;
+            }
         }
         // Waiting for a click event to select a file 
         private async void OpenFileButton_Click(object sender, RoutedEventArgs e)
@@ -151,9 +170,9 @@ namespace SqueezeApp2
                     }
             });
 
-            for (int i = 0; i < 5; i++)
+            for (int i = 0; i < 3; i++)
             {
-                label += $"\n\"{indexedResults[i].index}\" with confidence of { indexedResults[i].probability}%";
+                label += $"\n\"{ _labels[indexedResults[i].index]}\" with confidence of { 100*indexedResults[i].probability}%";
             }
 
         }
