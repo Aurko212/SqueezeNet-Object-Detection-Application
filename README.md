@@ -17,17 +17,12 @@ Uses the [Windows.AI.MachineLearning API](https://docs.microsoft.com/en-us/uwp/a
 
 ## Stretch Goals/ Where to improve
 
-- Integrate the microsoft effects package into the app  
-  
-      -add filters in real time
-      
- - Connect the webcam to the app for live input
- 
- - add densenet, mobilenet, resnet and squeezenet to app 
-  
-      -use to create edge detection in webcam footage
-      
- - Add OpenCV
+- Integrate the microsoft effects package into the app
+-        add filters in real time
+-  Connect the webcam to the app for live input
+-  add densenet, mobilenet, resnet and squeezenet to app
+-         use to create edge detection in webcam footage
+-  Add OpenCV
 
 
   
