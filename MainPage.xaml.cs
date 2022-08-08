@@ -42,6 +42,8 @@ namespace SqueezeApp2
         {
             try
             {
+                int ticks = Environment.TickCount;
+
                 // Get labels from labels file
                 var fileString = File.ReadAllText($"Assets/{_kLabelsFileName}");
                 var fileDict = JsonConvert.DeserializeObject<Dictionary<string, string>>(fileString);
@@ -54,6 +56,10 @@ namespace SqueezeApp2
                 StorageFile modelFile = await StorageFile.GetFileFromApplicationUriAsync(new Uri($"ms-appx:///Assets/SqueezeNet.onnx"));
                 // Instantiate the model. 
                 modelGen = await SqueezeNetModel.CreateFromStreamAsync(modelFile);
+
+                ticks = Environment.TickCount - ticks;
+                resultOutput.Text = $"Model loaded in { ticks } ticks, ready to run";
+
             }
 
             catch (Exception ex)
@@ -72,9 +78,15 @@ namespace SqueezeApp2
             }
             // After the click event happened and an input selected, begin the model execution. 
             // Bind the model input
+            int ticks = Environment.TickCount;
             await imageBind();
+            ticks = Environment.TickCount - ticks;
+            resultOutput.Text = $"Image bound in { ticks } ticks, ready to evaluate";
             // Model evaluation
+            int ticks2 = Environment.TickCount;
             await evaluate();
+            ticks2 = Environment.TickCount - ticks2;
+            resultOutput.Text += $"\n\"Image evaluated in { ticks2 } ticks, extracting";
             // Extract the results
             extractResult();
             // Display the results  
